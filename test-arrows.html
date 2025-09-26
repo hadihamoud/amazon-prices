@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrow Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Navigation arrows styling */
+        .nav-arrow {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background: white;
+            color: #6b7280;
+            box-shadow: none;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .nav-arrow:hover {
+            background-color: #f3f4f6;
+            color: #f97316;
+            border-color: #d1d5db;
+        }
+
+        .nav-arrow:focus {
+            outline: none;
+            border-color: #f97316;
+            box-shadow: none;
+        }
+
+        .nav-arrow:active {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .nav-arrow:focus-visible {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .nav-arrow:focus-within {
+            outline: none;
+            box-shadow: none;
+        }
+
+        /* Additional overrides for any browser-specific styling */
+        .nav-arrow * {
+            color: inherit;
+        }
+
+        .nav-arrow svg {
+            fill: currentColor;
+        }
+
+        /* Remove any potential pink/magenta highlights */
+        .nav-arrow::-moz-focus-inner {
+            border: 0;
+            outline: none;
+        }
+
+        .nav-arrow::-webkit-focus-ring-color {
+            outline: none;
+        }
+
+        /* Ensure no pink highlighting on any state */
+        .nav-arrow:not(:disabled):not(:focus):not(:active):not(:hover) {
+            background: white;
+            color: #6b7280;
+            border-color: #d1d5db;
+            box-shadow: none;
+            outline: none;
+        }
+
+        /* Target the specific button elements in the highlighted deals section */
+        .flex.gap-2 button.nav-arrow {
+            background: white;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+            box-shadow: none;
+            outline: none;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+        }
+
+        .flex.gap-2 button.nav-arrow:hover {
+            background-color: #f3f4f6;
+            color: #f97316;
+            border-color: #d1d5db;
+        }
+
+        .flex.gap-2 button.nav-arrow:focus {
+            outline: none;
+            box-shadow: none;
+            border-color: #f97316;
+        }
+
+        .flex.gap-2 button.nav-arrow:active {
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Navigation Arrows Test</h1>
+        
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <h2 class="text-xl font-semibold mb-4">Highlighted Deals Navigation</h2>
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Highlighted Deals</h3>
+                    <p class="text-sm text-gray-600">5 deals • Avg 0.4% off • Save $2142</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="nav-arrow" onclick="alert('Previous clicked')">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <button class="nav-arrow" onclick="alert('Next clicked')">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-xl font-semibold mb-4">Test Instructions</h2>
+            <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                <li><strong>Hover</strong> over the arrows - they should turn orange</li>
+                <li><strong>Click</strong> the arrows - they should show an alert</li>
+                <li><strong>Tab</strong> to focus the arrows - they should get an orange border</li>
+                <li><strong>No pink highlighting</strong> should appear anywhere</li>
+            </ol>
+            
+            <div class="mt-4 p-4 bg-green-100 border border-green-300 rounded">
+                <p class="text-green-800 font-medium">✅ If you see clean gray/orange arrows with no pink, the fix is working!</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

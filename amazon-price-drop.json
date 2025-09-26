@@ -1,0 +1,221 @@
+{
+  "name": "Amazon Price Drop Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyHour"
+            }
+          ]
+        }
+      },
+      "id": "Cron_1",
+      "name": "Cron (Hourly)",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [250, 250]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "{{GOOGLE_SHEET_ID}}",
+        "range": "Products!A:D",
+        "options": {},
+        "fields": "ASIN,ProductName,LastPrice,AffiliateLink",
+        "data": [
+          ["B000TEST01", "Dummy Product 1", "100", ""],
+          ["B000TEST02", "Dummy Product 2", "200", ""],
+          ["B000TEST03", "Dummy Product 3", "300", ""],
+          ["B000TEST04", "Dummy Product 4", "400", ""],
+          ["B000TEST05", "Dummy Product 5", "500", ""],
+          ["B000TEST06", "Dummy Product 6", "600", ""],
+          ["B000TEST07", "Dummy Product 7", "700", ""],
+          ["B000TEST08", "Dummy Product 8", "800", ""],
+          ["B000TEST09", "Dummy Product 9", "900", ""],
+          ["B000TEST10", "Dummy Product 10", "1000", ""]
+        ]
+      },
+      "id": "Init_Sheet",
+      "name": "Init Sheet with Dummy ASINs",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [450, 100]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "sheetId": "{{GOOGLE_SHEET_ID}}",
+        "range": "Products!A:D",
+        "options": {
+          "returnAll": true
+        }
+      },
+      "id": "Read_Sheet",
+      "name": "Read Products",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [450, 250]
+    },
+    {
+      "parameters": {
+        "batchSize": 1
+      },
+      "id": "Batch",
+      "name": "Split In Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 1,
+      "position": [650, 250]
+    },
+    {
+      "parameters": {
+        "functionCode": "const asin = item.json.ASIN;\nreturn [{\n  json: {\n    ASIN: asin,\n    ProductName: item.json.ProductName,\n    LastPrice: item.json.LastPrice,\n    AffiliateLink: item.json.AffiliateLink\n  }\n}];"
+      },
+      "id": "Prepare_Request",
+      "name": "Prepare API Request",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [850, 250]
+    },
+    {
+      "parameters": {
+        "url": "https://webservices.amazon.sa/paapi5/getitems",
+        "options": {},
+        "method": "POST",
+        "jsonParameters": true,
+        "bodyParametersJson": "={ \"ItemIds\": [ $json[\"ASIN\"] ], \"Resources\": [\"Offers.Listings.Price\",\"ItemInfo.Title\"], \"PartnerTag\": \"trust004-21\", \"PartnerType\": \"Associates\" }",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "id": "Amazon_API",
+      "name": "Amazon PA API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1050, 250],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "{{AWS_ACCESS_KEY}}",
+          "name": "{{AWS_SECRET_KEY}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "let currentPrice;\ntry {\n  currentPrice = $json[\"ItemsResult\"][\"Items\"][0][\"Offers\"][\"Listings\"][0][\"Price\"][\"Amount\"];\n} catch (e) {\n  currentPrice = null;\n}\n\nconst oldPrice = parseFloat($json[\"LastPrice\"] || 0);\n\nconst priceDropped = (currentPrice !== null && oldPrice && currentPrice < oldPrice);\n\nreturn [{\n  json: {\n    ASIN: $json[\"ASIN\"],\n    ProductName: $json[\"ProductName\"],\n    OldPrice: oldPrice,\n    NewPrice: currentPrice,\n    AffiliateLink: $json[\"AffiliateLink\"] || \"\",\n    PriceDropped: priceDropped\n  }\n}];"
+      },
+      "id": "Compare",
+      "name": "Compare Prices",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1250, 250]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json[\"PriceDropped\"]}}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": "IF_PriceDrop",
+      "name": "IF Price Dropped?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1450, 250]
+    },
+    {
+      "parameters": {
+        "functionCode": "const asin = $json[\"ASIN\"];\nlet affiliate = $json[\"AffiliateLink\"];\nif (!affiliate || affiliate.trim() === \"\") {\n  affiliate = `https://www.amazon.sa/dp/${asin}?tag=trust004-21`;\n}\nreturn [{ json: { ...$json, AffiliateLinkFinal: affiliate } }];"
+      },
+      "id": "Ensure_Link",
+      "name": "Ensure Affiliate Link",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1650, 250]
+    },
+    {
+      "parameters": {
+        "from": "whatsapp:+14155238886",
+        "to": "whatsapp:+9665XXXXXXX",
+        "message": "🔥 Price Drop Alert!\\n{{$json[\"ProductName\"]}}\\nOld Price: SAR {{$json[\"OldPrice\"]}}\\nNew Price: SAR {{$json[\"NewPrice\"]}}\\n👉 Buy: {{$json[\"AffiliateLinkFinal\"]}}"
+      },
+      "id": "WhatsApp",
+      "name": "Send WhatsApp (Twilio)",
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [1850, 250],
+      "credentials": {
+        "twilioApi": {
+          "id": "{{TWILIO_SID}}",
+          "name": "{{TWILIO_AUTH_TOKEN}}"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "{{GOOGLE_SHEET_ID}}",
+        "range": "History!A:F",
+        "fields": "ASIN,ProductName,OldPrice,NewPrice,AffiliateLinkFinal",
+        "options": {}
+      },
+      "id": "Log_History",
+      "name": "Log to History",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 2,
+      "position": [2050, 250]
+    }
+  ],
+  "connections": {
+    "Cron (Hourly)": {
+      "main": [
+        [{ "node": "Read Products", "type": "main", "index": 0 }]
+      ]
+    },
+    "Read Products": {
+      "main": [
+        [{ "node": "Split In Batches", "type": "main", "index": 0 }]
+      ]
+    },
+    "Split In Batches": {
+      "main": [
+        [{ "node": "Prepare API Request", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare API Request": {
+      "main": [
+        [{ "node": "Amazon PA API", "type": "main", "index": 0 }]
+      ]
+    },
+    "Amazon PA API": {
+      "main": [
+        [{ "node": "Compare Prices", "type": "main", "index": 0 }]
+      ]
+    },
+    "Compare Prices": {
+      "main": [
+        [{ "node": "IF Price Dropped?", "type": "main", "index": 0 }]
+      ]
+    },
+    "IF Price Dropped?": {
+      "main": [
+        [{ "node": "Ensure Affiliate Link", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Ensure Affiliate Link": {
+      "main": [
+        [{ "node": "Send WhatsApp (Twilio)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send WhatsApp (Twilio)": {
+      "main": [
+        [{ "node": "Log to History", "type": "main", "index": 0 }]
+      ]
+    }
+  }
+}

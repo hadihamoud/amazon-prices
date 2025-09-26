@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Watchlist Sync</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .product {
+            display: inline-block;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 5px;
+            background: white;
+            width: 180px;
+        }
+        .product img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .product-title {
+            font-weight: bold;
+            font-size: 11px;
+            margin: 5px 0;
+        }
+        .product-price {
+            color: #059669;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .button {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #d97706;
+        }
+        .button.sync {
+            background: #10b981;
+        }
+        .button.sync:hover {
+            background: #059669;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .status.info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Watchlist Sync</h1>
+    <p>This page tests the sync between admin tracked products and your watchlist.</p>
+    
+    <div class="container">
+        <h2>Instructions</h2>
+        <ol>
+            <li>Go to Admin Dashboard → "Tracked Products" tab</li>
+            <li>Click "Sync to My Watchlist" button</li>
+            <li>Go back to the main page and check "My Watchlist" section</li>
+            <li>You should see the tracked products in your watchlist</li>
+        </ol>
+    </div>
+
+    <div class="container">
+        <h2>Current Tracked Products</h2>
+        <div id="tracked-products"></div>
+    </div>
+
+    <div class="container">
+        <h2>Your Watchlist</h2>
+        <div id="your-watchlist"></div>
+    </div>
+
+    <div class="container">
+        <h2>Test Controls</h2>
+        <button class="button" onclick="simulateSync()">Simulate Sync</button>
+        <button class="button" onclick="addTrackedProduct()">Add Tracked Product</button>
+        <button class="button" onclick="clearWatchlist()">Clear Watchlist</button>
+        <button class="button" onclick="refreshData()">Refresh Data</button>
+    </div>
+
+    <div id="status" class="status info" style="display: none;"></div>
+
+    <script>
+        // Simulate the tracked products
+        let trackedProducts = [
+            {
+                id: 'admin-tracked-1',
+                title: 'Apple AirPods Pro (2nd Generation)',
+                price: 199.99,
+                imageUrl: 'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=200&h=200&fit=crop',
+                productUrl: 'https://www.amazon.com/dp/B0BDJDR6J8',
+                asin: 'B0BDJDR6J8',
+                currentPrice: 249.99
+            },
+            {
+                id: 'admin-tracked-2',
+                title: 'Samsung Galaxy S23 Ultra 256GB',
+                price: 999.99,
+                imageUrl: 'https://images.unsplash.com/photo-1610945265064-3e4e5d5b5b5b?w=200&h=200&fit=crop',
+                productUrl: 'https://www.amazon.com/dp/B0BQJ8QZ8Z',
+                asin: 'B0BQJ8QZ8Z',
+                currentPrice: 1199.99
+            },
+            {
+                id: 'admin-tracked-3',
+                title: 'MacBook Pro 14-inch M2 Chip',
+                price: 1999.99,
+                imageUrl: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=200&h=200&fit=crop',
+                productUrl: 'https://www.amazon.com/dp/B0BQJ8QZ8Z',
+                asin: 'B0BQJ8QZ8Z',
+                currentPrice: 2199.99
+            }
+        ];
+
+        let yourWatchlist = [];
+
+        function displayTrackedProducts() {
+            const container = document.getElementById('tracked-products');
+            container.innerHTML = '';
+            
+            trackedProducts.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.title}">
+                    <div class="product-title">${product.title}</div>
+                    <div class="product-price">$${product.price.toFixed(2)}</div>
+                `;
+                container.appendChild(productDiv);
+            });
+        }
+
+        function displayYourWatchlist() {
+            const container = document.getElementById('your-watchlist');
+            container.innerHTML = '';
+            
+            if (yourWatchlist.length === 0) {
+                container.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">Your watchlist is empty</p>';
+                return;
+            }
+            
+            yourWatchlist.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.innerHTML = `
+                    <img src="${product.imageUrl}" alt="${product.title}">
+                    <div class="product-title">${product.title}</div>
+                    <div class="product-price">$${product.price.toFixed(2)}</div>
+                `;
+                container.appendChild(productDiv);
+            });
+        }
+
+        function simulateSync() {
+            yourWatchlist = [...trackedProducts];
+            displayYourWatchlist();
+            showStatus(`✅ Synced ${trackedProducts.length} tracked products to your watchlist!`, 'success');
+        }
+
+        function addTrackedProduct() {
+            const newProduct = {
+                id: `admin-tracked-${Date.now()}`,
+                title: `New Product ${trackedProducts.length + 1}`,
+                price: Math.floor(Math.random() * 500) + 50,
+                imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&h=200&fit=crop',
+                productUrl: 'https://www.amazon.com/dp/EXAMPLE',
+                asin: `EXAMPLE${Date.now()}`
+            };
+            
+            trackedProducts.push(newProduct);
+            displayTrackedProducts();
+            showStatus(`Added new tracked product: ${newProduct.title}`, 'info');
+        }
+
+        function clearWatchlist() {
+            yourWatchlist = [];
+            displayYourWatchlist();
+            showStatus('Cleared your watchlist', 'info');
+        }
+
+        function refreshData() {
+            displayTrackedProducts();
+            displayYourWatchlist();
+            showStatus('Data refreshed', 'info');
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize
+        displayTrackedProducts();
+        displayYourWatchlist();
+    </script>
+</body>
+</html>
+
+

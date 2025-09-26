@@ -1,0 +1,143 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-white text-gray-900 font-sans;
+}
+.rtl {
+  direction: rtl;
+}
+
+
+.container-responsive {
+  @apply max-w-6xl mx-auto px-4;
+}
+
+.card {
+  @apply bg-white rounded border border-zobda-border shadow-zobda;
+}
+
+.btn-zobda {
+  @apply inline-flex items-center justify-center rounded bg-zobda-orange hover:bg-zobda-darkOrange text-white font-medium px-4 py-2 transition-colors;
+}
+
+.btn-zobda-blue {
+  @apply inline-flex items-center justify-center rounded bg-zobda-blue hover:bg-zobda-darkBlue text-white font-medium px-4 py-2 transition-colors;
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center rounded border border-zobda-border text-zobda-gray hover:bg-zobda-lightGray font-medium px-3 py-1.5 transition-colors;
+}
+
+.price-text {
+  @apply text-2xl font-bold text-zobda-orange;
+}
+
+.product-title {
+  @apply text-sm leading-tight text-gray-900 hover:text-zobda-blue cursor-pointer;
+}
+
+/* Amazon yellow style for "View at Amazon" */
+.btn-amazon-yellow {
+  @apply inline-flex items-center justify-center rounded bg-[#ffd814] hover:bg-[#f7ca00] text-[#111] font-semibold px-4 py-2 transition-colors shadow;
+}
+
+/* Navigation arrows styling */
+.nav-arrow {
+  @apply p-2 border border-zobda-border rounded hover:bg-zobda-lightGray text-zobda-gray hover:text-zobda-orange transition-colors focus:outline-none focus:ring-0 focus:border-zobda-orange disabled:opacity-50 disabled:cursor-not-allowed;
+  background: white !important;
+  border-color: #d1d5db !important;
+  color: #6b7280 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.nav-arrow:hover {
+  background-color: #f3f4f6 !important;
+  color: #f97316 !important;
+  border-color: #d1d5db !important;
+}
+
+.nav-arrow:focus {
+  outline: none !important;
+  ring: 0 !important;
+  border-color: #f97316 !important;
+  box-shadow: none !important;
+}
+
+.nav-arrow:active {
+  outline: none !important;
+  ring: 0 !important;
+  box-shadow: none !important;
+}
+
+.nav-arrow:focus-visible {
+  outline: none !important;
+  ring: 0 !important;
+  box-shadow: none !important;
+}
+
+.nav-arrow:focus-within {
+  outline: none !important;
+  ring: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Additional overrides for any browser-specific styling */
+.nav-arrow * {
+  color: inherit !important;
+}
+
+.nav-arrow svg {
+  fill: currentColor !important;
+}
+
+/* Remove any potential pink/magenta highlights */
+.nav-arrow::-moz-focus-inner {
+  border: 0 !important;
+  outline: none !important;
+}
+
+.nav-arrow::-webkit-focus-ring-color {
+  outline: none !important;
+}
+
+/* Ensure no pink highlighting on any state */
+.nav-arrow:not(:disabled):not(:focus):not(:active):not(:hover) {
+  background: white !important;
+  color: #6b7280 !important;
+  border-color: #d1d5db !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Target the specific button elements in the highlighted deals section */
+.flex.gap-2 button.nav-arrow {
+  background: white !important;
+  color: #6b7280 !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border-radius: 0.375rem !important;
+  padding: 0.5rem !important;
+}
+
+.flex.gap-2 button.nav-arrow:hover {
+  background-color: #f3f4f6 !important;
+  color: #f97316 !important;
+  border-color: #d1d5db !important;
+}
+
+.flex.gap-2 button.nav-arrow:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #f97316 !important;
+}
+
+.flex.gap-2 button.nav-arrow:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+

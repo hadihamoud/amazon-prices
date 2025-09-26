@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mobile Authentication</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .step {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .step.active {
+            border-color: #f59e0b;
+            background-color: #fffbeb;
+        }
+        .step.completed {
+            border-color: #10b981;
+            background-color: #f0fdf4;
+        }
+        .otp-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .otp-digit {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            outline: none;
+        }
+        .otp-digit:focus {
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        }
+        .button {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #d97706;
+        }
+        .button.secondary {
+            background: #6b7280;
+        }
+        .button.secondary:hover {
+            background: #4b5563;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .status.error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .status.info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        .demo-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .user-info {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Mobile Authentication System</h1>
+    <p>This page demonstrates the mobile number + OTP authentication system.</p>
+    
+    <div class="container">
+        <h2>Authentication Flow</h2>
+        <div class="step active" id="step1">
+            <h3>Step 1: Enter Mobile Number</h3>
+            <p>Enter your mobile number with country code</p>
+            <div style="display: flex; gap: 10px; margin: 10px 0;">
+                <select id="countryCode" style="padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                    <option value="+91">🇮🇳 +91</option>
+                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+966">🇸🇦 +966</option>
+                    <option value="+20">🇪🇬 +20</option>
+                </select>
+                <input type="tel" id="mobileNumber" placeholder="Enter mobile number" 
+                       style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;">
+                <button class="button" onclick="sendOTP()">Send OTP</button>
+            </div>
+        </div>
+        
+        <div class="step" id="step2">
+            <h3>Step 2: Enter OTP</h3>
+            <p>Enter the 6-digit OTP sent to your mobile number</p>
+            <div class="otp-input">
+                <input type="text" class="otp-digit" maxlength="1" oninput="handleOTPInput(this, 0)">
+                <input type="text" class="otp-digit" maxlength="1" oninput="handleOTPInput(this, 1)">
+                <input type="text" class="otp-digit" maxlength="1" oninput="handleOTPInput(this, 2)">
+                <input type="text" class="otp-digit" maxlength="1" oninput="handleOTPInput(this, 3)">
+                <input type="text" class="otp-digit" maxlength="1" oninput="handleOTPInput(this, 4)">
+                <input type="text" class="otp-digit" maxlength="1" oninput="handleOTPInput(this, 5)">
+            </div>
+            <div style="text-align: center; margin: 10px 0;">
+                <button class="button secondary" onclick="resendOTP()">Resend OTP</button>
+                <button class="button secondary" onclick="goBack()">Change Number</button>
+            </div>
+        </div>
+        
+        <div class="step" id="step3">
+            <h3>Step 3: Success!</h3>
+            <p>Mobile number verified successfully!</p>
+            <div id="userInfo" class="user-info" style="display: none;">
+                <h4>User Information:</h4>
+                <p><strong>Mobile:</strong> <span id="userMobile"></span></p>
+                <p><strong>User ID:</strong> <span id="userId"></span></p>
+                <p><strong>Status:</strong> <span id="userStatus"></span></p>
+            </div>
+            <button class="button" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Current Status</h2>
+        <div id="status" class="status info">
+            Ready to start authentication
+        </div>
+    </div>
+
+    <div class="demo-info">
+        <h3>Demo Mode Instructions</h3>
+        <ol>
+            <li>Enter any mobile number (e.g., 1234567890)</li>
+            <li>Click "Send OTP" - check console for the OTP code</li>
+            <li>Enter the OTP code in the input fields</li>
+            <li>You'll be logged in successfully</li>
+            <li>Check localStorage for user session data</li>
+        </ol>
+        <p><strong>Demo OTP:</strong> <span id="demoOTP">Check console</span></p>
+    </div>
+
+    <div class="container">
+        <h2>Test Controls</h2>
+        <button class="button" onclick="simulateSignup()">Simulate Signup</button>
+        <button class="button" onclick="simulateLogin()">Simulate Login</button>
+        <button class="button secondary" onclick="clearData()">Clear All Data</button>
+        <button class="button secondary" onclick="showUserData()">Show User Data</button>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let otpCode = '';
+        let userSession = null;
+
+        // Generate demo OTP
+        function generateOTP() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Update status
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        // Update step
+        function updateStep(step) {
+            // Remove active class from all steps
+            document.querySelectorAll('.step').forEach(s => {
+                s.classList.remove('active', 'completed');
+            });
+            
+            // Add appropriate classes
+            for (let i = 1; i <= 3; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                if (i < step) {
+                    stepEl.classList.add('completed');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                }
+            }
+            
+            currentStep = step;
+        }
+
+        // Send OTP
+        function sendOTP() {
+            const mobileNumber = document.getElementById('mobileNumber').value;
+            const countryCode = document.getElementById('countryCode').value;
+            
+            if (!mobileNumber) {
+                updateStatus('Please enter a mobile number', 'error');
+                return;
+            }
+            
+            // Generate OTP
+            otpCode = generateOTP();
+            
+            // Store in localStorage for demo
+            localStorage.setItem('zobda_demo_otp', otpCode);
+            localStorage.setItem('zobda_demo_mobile', `${countryCode}${mobileNumber}`);
+            
+            // Update demo OTP display
+            document.getElementById('demoOTP').textContent = otpCode;
+            
+            updateStatus(`OTP sent to ${countryCode}${mobileNumber}. Check console or use: ${otpCode}`, 'success');
+            updateStep(2);
+            
+            console.log(`Demo OTP for ${countryCode}${mobileNumber}: ${otpCode}`);
+        }
+
+        // Handle OTP input
+        function handleOTPInput(input, index) {
+            const value = input.value;
+            
+            // Only allow numbers
+            if (!/^\d*$/.test(value)) {
+                input.value = '';
+                return;
+            }
+            
+            // Move to next input if current is filled
+            if (value && index < 5) {
+                const nextInput = input.parentElement.children[index + 1];
+                nextInput.focus();
+            }
+            
+            // Check if OTP is complete
+            const otpInputs = document.querySelectorAll('.otp-digit');
+            const enteredOTP = Array.from(otpInputs).map(input => input.value).join('');
+            
+            if (enteredOTP.length === 6) {
+                verifyOTP(enteredOTP);
+            }
+        }
+
+        // Verify OTP
+        function verifyOTP(enteredOTP) {
+            if (enteredOTP === otpCode) {
+                // Create user session
+                userSession = {
+                    userId: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                    mobileNumber: localStorage.getItem('zobda_demo_mobile'),
+                    isVerified: true,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Store in localStorage
+                localStorage.setItem('zobda_user_session', JSON.stringify(userSession));
+                
+                // Update UI
+                document.getElementById('userMobile').textContent = userSession.mobileNumber;
+                document.getElementById('userId').textContent = userSession.userId;
+                document.getElementById('userStatus').textContent = 'Verified';
+                document.getElementById('userInfo').style.display = 'block';
+                
+                updateStatus('Mobile number verified successfully!', 'success');
+                updateStep(3);
+            } else {
+                updateStatus('Invalid OTP. Please try again.', 'error');
+                // Clear OTP inputs
+                document.querySelectorAll('.otp-digit').forEach(input => input.value = '');
+                document.querySelector('.otp-digit').focus();
+            }
+        }
+
+        // Resend OTP
+        function resendOTP() {
+            const mobileNumber = document.getElementById('mobileNumber').value;
+            const countryCode = document.getElementById('countryCode').value;
+            
+            if (!mobileNumber) {
+                updateStatus('Please enter a mobile number first', 'error');
+                return;
+            }
+            
+            // Generate new OTP
+            otpCode = generateOTP();
+            localStorage.setItem('zobda_demo_otp', otpCode);
+            document.getElementById('demoOTP').textContent = otpCode;
+            
+            updateStatus(`New OTP sent to ${countryCode}${mobileNumber}. Use: ${otpCode}`, 'success');
+            
+            // Clear OTP inputs
+            document.querySelectorAll('.otp-digit').forEach(input => input.value = '');
+            document.querySelector('.otp-digit').focus();
+        }
+
+        // Go back to mobile input
+        function goBack() {
+            updateStep(1);
+            updateStatus('Enter your mobile number to continue', 'info');
+        }
+
+        // Logout
+        function logout() {
+            userSession = null;
+            localStorage.removeItem('zobda_user_session');
+            localStorage.removeItem('zobda_demo_otp');
+            localStorage.removeItem('zobda_demo_mobile');
+            
+            // Clear form
+            document.getElementById('mobileNumber').value = '';
+            document.querySelectorAll('.otp-digit').forEach(input => input.value = '');
+            document.getElementById('userInfo').style.display = 'none';
+            
+            updateStatus('Logged out successfully', 'info');
+            updateStep(1);
+        }
+
+        // Simulate signup
+        function simulateSignup() {
+            document.getElementById('mobileNumber').value = '1234567890';
+            document.getElementById('countryCode').value = '+1';
+            sendOTP();
+        }
+
+        // Simulate login
+        function simulateLogin() {
+            document.getElementById('mobileNumber').value = '9876543210';
+            document.getElementById('countryCode').value = '+44';
+            sendOTP();
+        }
+
+        // Clear all data
+        function clearData() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        // Show user data
+        function showUserData() {
+            const session = localStorage.getItem('zobda_user_session');
+            if (session) {
+                const userData = JSON.parse(session);
+                alert(`User Data:\n${JSON.stringify(userData, null, 2)}`);
+            } else {
+                alert('No user session found');
+            }
+        }
+
+        // Initialize
+        updateStep(1);
+    </script>
+</body>
+</html>
+
+
