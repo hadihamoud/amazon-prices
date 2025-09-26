@@ -10,7 +10,7 @@
     "isolatedModules": true,
     "noEmit": false,
     "jsx": "react-jsx",
-    "strict": true,
+    "strict": false,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
